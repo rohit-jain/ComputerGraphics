@@ -103,14 +103,7 @@ void canvashdl::rotate(float angle, vec3f axis)
 	// TODO Assignment 1: Multiply the active matrix by a rotation matrix.
     mat4f rotation_matrix;
     
-    //(1) Translate space so that the rotation axis passes through the origin.
-    mat4f T = identity<float, 4, 4>();
-    vec4f axis2(axis, 1);
-    T.set_col(3, -axis2);
-    mat4f T_inverse = inverse(T);   //Needed for inverse step
-
-    
-    //(2) Rotate space about the x axis so that the rotation axis lies in the xz plane.
+    //(1) Rotate space about the x axis so that the rotation axis lies in the xz plane.
     mat4f Rz = identity<float, 4, 4>();
     float sin_val = sin(degtorad(angle));
     float cos_val = cos(degtorad(angle));
