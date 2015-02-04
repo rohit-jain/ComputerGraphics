@@ -26,7 +26,6 @@ private:
 	GLuint screen_geometry;
 	GLuint screen_shader;
 
-
 	void load_texture();
 	void load_geometry();
 	void load_shader();
@@ -67,6 +66,7 @@ public:
 		modelview_matrix = 0,
 		projection_matrix = 1,
 		normal_matrix = 2
+        
 	} active_matrix;
 
 	void set_matrix(matrix_id matid);

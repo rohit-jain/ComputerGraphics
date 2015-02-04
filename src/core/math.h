@@ -97,6 +97,7 @@ type median(type t1, type t2, type t3)
 
 bool is_even(int i);
 bool is_odd(int i);
+    
 
 }
 

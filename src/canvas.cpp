@@ -79,6 +79,7 @@ void canvashdl::resize(int w, int h)
 void canvashdl::set_matrix(matrix_id matid)
 {
 	// TODO Assignment 1: Change which matrix is active.
+    active_matrix = matid;
 }
 
 /* load_identity
@@ -88,6 +89,7 @@ void canvashdl::set_matrix(matrix_id matid)
 void canvashdl::load_identity()
 {
 	// TODO Assignment 1: Set the active matrix to the identity matrix.
+    matrices[active_matrix] = identity<float, 4, 4>();
 }
 
 /* rotate
@@ -97,6 +99,45 @@ void canvashdl::load_identity()
 void canvashdl::rotate(float angle, vec3f axis)
 {
 	// TODO Assignment 1: Multiply the active matrix by a rotation matrix.
+    mat4f rotation_matrix;
+    
+    //(1) Translate space so that the rotation axis passes through the origin.
+    mat4f T = identity<float, 4, 4>();
+    vec4f axis2(axis, 1);
+    T.set_col(3, -axis2);
+    mat4f T_inverse = inverse(T);   //Needed for inverse step
+
+    
+    //(2) Rotate space about the x axis so that the rotation axis lies in the xz plane.
+    mat4f Rz = identity<float, 4, 4>();
+    float sin_val = sin(degtorad(angle));
+    float cos_val = cos(degtorad(angle));
+    
+    Rz[0][0] = cos_val;
+    Rz[0][1] = -sin_val;
+    Rz[1][0] = sin_val;
+    Rz[1][1] = cos_val;
+    
+    rotation_matrix = Rz;
+    //Or active_matrix = Rz*active_matrix;
+    
+    //(3) Rotate space about the y axis so that the rotation axis lies along the z axis.
+    mat4f Ry = identity<float, 4, 4>();
+    
+    Rz[0][0] = cos_val;
+    Rz[0][2] = sin_val;
+    Rz[2][0] = -sin_val;
+    Rz[2][2] = cos_val;
+    
+    rotation_matrix = Ry*rotation_matrix;
+    
+    //(4) Perform the desired rotation by θ about the z axis.
+    
+    //(5) Apply the inverse of step (3).
+    
+    //(6) Apply the inverse of step (2).
+    
+    //(7) Apply the inverse of step (1).
 }
 
 /* translate
@@ -106,6 +147,11 @@ void canvashdl::rotate(float angle, vec3f axis)
 void canvashdl::translate(vec3f direction)
 {
 	// TODO Assignment 1: Multiply the active matrix by a translation matrix.
+    
+    mat4f translation_matrix = identity<float, 4, 4>();
+    vec4f direction2(direction, 1);
+    translation_matrix.set_col(3, direction2);
+    matrices[active_matrix] = translation_matrix*matrices[active_matrix];
 }
 
 /* scale

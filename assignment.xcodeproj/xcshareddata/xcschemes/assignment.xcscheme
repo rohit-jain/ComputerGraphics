@@ -49,7 +49,10 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable>
+      <PathRunnable
+         FilePath = "/Users/oliverhoffman/Box Sync/Cornell Tech/Spring 2015/Computer Graphics/Assignments/Assignment 1/skeleton/build/assignment">
+      </PathRunnable>
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C5EE0A251A71506700FAF23F"
@@ -57,7 +60,7 @@
             BlueprintName = "assignment"
             ReferencedContainer = "container:assignment.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -68,7 +71,10 @@
       customWorkingDirectory = "$PROJECT_DIR"
       buildConfiguration = "Release"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable>
+      <PathRunnable
+         FilePath = "/Users/oliverhoffman/Box Sync/Cornell Tech/Spring 2015/Computer Graphics/Assignments/Assignment 1/skeleton/build/assignment">
+      </PathRunnable>
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C5EE0A251A71506700FAF23F"
@@ -76,7 +82,7 @@
             BlueprintName = "assignment"
             ReferencedContainer = "container:assignment.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
