@@ -3,73 +3,73 @@
 
 canvashdl::canvashdl(int w, int h)
 {
-	width = w;
-	height = h;
-	last_reshape_time = -1.0;
-	reshape_width = w;
-	reshape_height = h;
-	initialized = false;
-
-	color_buffer = new unsigned char[width*height*3];
-	// TODO Assignment 2: Initialize the depth buffer
-
-	screen_texture = 0;
-	screen_geometry = 0;
-	screen_shader = 0;
-
-	active_matrix = modelview_matrix;
-
-	for (int i = 0; i < 3; i++)
-		matrices[i] = identity<float, 4, 4>();
-
-	polygon_mode = line;
-	culling = backface;
+    width = w;
+    height = h;
+    last_reshape_time = -1.0;
+    reshape_width = w;
+    reshape_height = h;
+    initialized = false;
+    
+    color_buffer = new unsigned char[width*height*3];
+    // TODO Assignment 2: Initialize the depth buffer
+    
+    screen_texture = 0;
+    screen_geometry = 0;
+    screen_shader = 0;
+    
+    active_matrix = modelview_matrix;
+    
+    for (int i = 0; i < 3; i++)
+        matrices[i] = identity<float, 4, 4>();
+    
+    polygon_mode = line;
+    culling = backface;
 }
 
 canvashdl::~canvashdl()
 {
-	if (color_buffer != NULL)
-	{
-		delete [] color_buffer;
-		color_buffer = NULL;
-	}
-
-	// TODO Assignment 2: Clean up the depth buffer
+    if (color_buffer != NULL)
+    {
+        delete [] color_buffer;
+        color_buffer = NULL;
+    }
+    
+    // TODO Assignment 2: Clean up the depth buffer
 }
 
 void canvashdl::clear_color_buffer()
 {
-	memset(color_buffer, 0, width*height*3*sizeof(unsigned char));
+    memset(color_buffer, 0, width*height*3*sizeof(unsigned char));
 }
 
 void canvashdl::clear_depth_buffer()
 {
-	// TODO Assignment 2: Clear the depth buffer
+    // TODO Assignment 2: Clear the depth buffer
 }
 
 void canvashdl::resize(int w, int h)
 {
-	// TODO Assignment 2: resize the depth buffer
-
-	last_reshape_time = -1.0;
-
-	if (color_buffer != NULL)
-	{
-		delete [] color_buffer;
-		color_buffer = NULL;
-	}
-
-	width = w;
-	height = h;
-
-	color_buffer = new unsigned char[w*h*3];
-
-	glActiveTexture(GL_TEXTURE0);
-	check_error(__FILE__, __LINE__);
-	glBindTexture(GL_TEXTURE_2D, screen_texture);
-	check_error(__FILE__, __LINE__);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, color_buffer);
-	check_error(__FILE__, __LINE__);
+    // TODO Assignment 2: resize the depth buffer
+    
+    last_reshape_time = -1.0;
+    
+    if (color_buffer != NULL)
+    {
+        delete [] color_buffer;
+        color_buffer = NULL;
+    }
+    
+    width = w;
+    height = h;
+    
+    color_buffer = new unsigned char[w*h*3];
+    
+    glActiveTexture(GL_TEXTURE0);
+    check_error(__FILE__, __LINE__);
+    glBindTexture(GL_TEXTURE_2D, screen_texture);
+    check_error(__FILE__, __LINE__);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, color_buffer);
+    check_error(__FILE__, __LINE__);
 }
 
 /* set_matrix
@@ -78,7 +78,8 @@ void canvashdl::resize(int w, int h)
  */
 void canvashdl::set_matrix(matrix_id matid)
 {
-	// TODO Assignment 1: Change which matrix is active.
+    // TODO Assignment 1: Change which matrix is active.
+    active_matrix = matid;
 }
 
 /* load_identity
@@ -88,7 +89,8 @@ void canvashdl::set_matrix(matrix_id matid)
  */
 void canvashdl::load_identity()
 {
-	// TODO Assignment 1: Set the active matrix to the identity matrix.
+    // TODO Assignment 1: Set the active matrix to the identity matrix.
+    matrices[active_matrix] = identity<float, 4, 4>();
 }
 
 /* rotate
@@ -98,7 +100,39 @@ void canvashdl::load_identity()
  */
 void canvashdl::rotate(float angle, vec3f axis)
 {
-	// TODO Assignment 1: Multiply the active matrix by a rotation matrix.
+    // TODO Assignment 1: Multiply the active matrix by a rotation matrix.
+    mat4f rotation_matrix;
+    
+    //(1) Rotate space about the x axis so that the rotation axis lies in the xz plane.
+    mat4f Rz = identity<float, 4, 4>();
+    float sin_val = sin(degtorad(angle));
+    float cos_val = cos(degtorad(angle));
+    
+    Rz[0][0] = cos_val;
+    Rz[0][1] = -sin_val;
+    Rz[1][0] = sin_val;
+    Rz[1][1] = cos_val;
+    
+    rotation_matrix = Rz;
+    //Or active_matrix = Rz*active_matrix;
+    
+    //(3) Rotate space about the y axis so that the rotation axis lies along the z axis.
+    mat4f Ry = identity<float, 4, 4>();
+    
+    Rz[0][0] = cos_val;
+    Rz[0][2] = sin_val;
+    Rz[2][0] = -sin_val;
+    Rz[2][2] = cos_val;
+    
+    rotation_matrix = Ry*rotation_matrix;
+    
+    //(4) Perform the desired rotation by θ about the z axis.
+    
+    //(5) Apply the inverse of step (3).
+    
+    //(6) Apply the inverse of step (2).
+    
+    //(7) Apply the inverse of step (1).
 }
 
 /* translate
@@ -108,7 +142,12 @@ void canvashdl::rotate(float angle, vec3f axis)
  */
 void canvashdl::translate(vec3f direction)
 {
-	// TODO Assignment 1: Multiply the active matrix by a translation matrix.
+    // TODO Assignment 1: Multiply the active matrix by a translation matrix.
+    
+    mat4f translation_matrix = identity<float, 4, 4>();
+    vec4f direction2(direction, 1);
+    translation_matrix.set_col(3, direction2);
+    matrices[active_matrix] = translation_matrix*matrices[active_matrix];
 }
 
 /* scale
@@ -118,7 +157,7 @@ void canvashdl::translate(vec3f direction)
  */
 void canvashdl::scale(vec3f size)
 {
-	// TODO Assignment 1: Multiply the active matrix by a scaling matrix.
+    // TODO Assignment 1: Multiply the active matrix by a scaling matrix.
 }
 
 /* perspective
@@ -128,7 +167,7 @@ void canvashdl::scale(vec3f size)
  */
 void canvashdl::perspective(float fovy, float aspect, float n, float f)
 {
-	// TODO Assignment 1: Multiply the active matrix by a perspective projection matrix.
+    // TODO Assignment 1: Multiply the active matrix by a perspective projection matrix.
 }
 
 /* frustum
@@ -138,7 +177,7 @@ void canvashdl::perspective(float fovy, float aspect, float n, float f)
  */
 void canvashdl::frustum(float l, float r, float b, float t, float n, float f)
 {
-	// TODO Assignment 1: Multiply the active matrix by a frustum projection matrix.
+    // TODO Assignment 1: Multiply the active matrix by a frustum projection matrix.
 }
 
 /* ortho
@@ -148,7 +187,7 @@ void canvashdl::frustum(float l, float r, float b, float t, float n, float f)
  */
 void canvashdl::ortho(float l, float r, float b, float t, float n, float f)
 {
-	// TODO Assignment 1: Multiply the active matrix by an orthographic projection matrix.
+    // TODO Assignment 1: Multiply the active matrix by an orthographic projection matrix.
 }
 
 /* look_at
@@ -159,7 +198,7 @@ void canvashdl::ortho(float l, float r, float b, float t, float n, float f)
  */
 void canvashdl::look_at(vec3f eye, vec3f at, vec3f up)
 {
-	// TODO Assignment 1: Emulate the functionality of gluLookAt
+    // TODO Assignment 1: Emulate the functionality of gluLookAt
 }
 
 /* to_window
@@ -168,10 +207,10 @@ void canvashdl::look_at(vec3f eye, vec3f at, vec3f up)
  */
 vec3f canvashdl::to_window(vec2i pixel)
 {
-	/* TODO Assignment 1: Given a pixel coordinate (x from 0 to width and y from 0 to height),
-	 * convert it into window coordinates (x from -1 to 1 and y from -1 to 1).
-	 */
-	return vec3f();
+    /* TODO Assignment 1: Given a pixel coordinate (x from 0 to width and y from 0 to height),
+     * convert it into window coordinates (x from -1 to 1 and y from -1 to 1).
+     */
+    return vec3f();
 }
 
 /* unproject
@@ -181,8 +220,8 @@ vec3f canvashdl::to_window(vec2i pixel)
  */
 vec3f canvashdl::unproject(vec3f window)
 {
-	// TODO Assignment 1: Unproject a window coordinate into world coordinates.
-	return vec3f();
+    // TODO Assignment 1: Unproject a window coordinate into world coordinates.
+    return vec3f();
 }
 
 /* shade_vertex
@@ -191,10 +230,10 @@ vec3f canvashdl::unproject(vec3f window)
  */
 vec8f canvashdl::shade_vertex(vec8f v)
 {
-	// TODO Assignment 1: Do all of the necessary transformations (normal, projection, modelview, etc)
-
-	// TODO Assignment 2: Implement Flat and Gouraud shading.
-	return vec8f();
+    // TODO Assignment 1: Do all of the necessary transformations (normal, projection, modelview, etc)
+    
+    // TODO Assignment 2: Implement Flat and Gouraud shading.
+    return vec8f();
 }
 
 /* shade_fragment
@@ -203,12 +242,12 @@ vec8f canvashdl::shade_vertex(vec8f v)
  */
 vec3f canvashdl::shade_fragment(vec8f v)
 {
-	// TODO Assignment 1: Pick a color, any color (as long as it is distinguishable from the background color).
-
-	/* TODO Assignment 2: Figure out the pixel color due to lighting and materials
-	 * and implement phong shading.
-	 */
-	return vec3f();
+    // TODO Assignment 1: Pick a color, any color (as long as it is distinguishable from the background color).
+    
+    /* TODO Assignment 2: Figure out the pixel color due to lighting and materials
+     * and implement phong shading.
+     */
+    return vec3f();
 }
 
 /* plot
@@ -217,9 +256,9 @@ vec3f canvashdl::shade_fragment(vec8f v)
  */
 void canvashdl::plot(vec2i xy, vec8f v)
 {
-	// TODO Assignment 1: Plot a pixel, calling the fragment shader.
-
-	// TODO Assignment 2: Check the pixel depth against the depth buffer.
+    // TODO Assignment 1: Plot a pixel, calling the fragment shader.
+    
+    // TODO Assignment 2: Check the pixel depth against the depth buffer.
 }
 
 /* plot_point
@@ -228,7 +267,7 @@ void canvashdl::plot(vec2i xy, vec8f v)
  */
 void canvashdl::plot_point(vec8f v)
 {
-	// TODO Assignment 1: Plot a point given in window coordinates.
+    // TODO Assignment 1: Plot a point given in window coordinates.
 }
 
 /* plot_line
@@ -237,9 +276,9 @@ void canvashdl::plot_point(vec8f v)
  */
 void canvashdl::plot_line(vec8f v1, vec8f v2)
 {
-	// TODO Assignment 1: Implement Bresenham's Algorithm.
-
-	// TODO Assignment 2: Add interpolation for the normals and texture coordinates as well.
+    // TODO Assignment 1: Implement Bresenham's Algorithm.
+    
+    // TODO Assignment 2: Add interpolation for the normals and texture coordinates as well.
 }
 
 /* plot_half_triangle
@@ -250,9 +289,9 @@ void canvashdl::plot_line(vec8f v1, vec8f v2)
  */
 void canvashdl::plot_half_triangle(vec2i s1, vec2i s2, vec2i s3, vec8f v1, vec8f v2, vec8f v3, vec5f ave)
 {
-	/* TODO Assignment 2: Implement Bresenham's algorithm. You may plot the horizontal
-	 * half or the vertical half. Add interpolation for the normals and texture coordinates as well.
-	 */
+    /* TODO Assignment 2: Implement Bresenham's algorithm. You may plot the horizontal
+     * half or the vertical half. Add interpolation for the normals and texture coordinates as well.
+     */
 }
 
 /* plot_triangle
@@ -261,12 +300,12 @@ void canvashdl::plot_half_triangle(vec2i s1, vec2i s2, vec2i s3, vec8f v1, vec8f
  */
 void canvashdl::plot_triangle(vec8f v1, vec8f v2, vec8f v3)
 {
-	/* TODO Assignment 1: Use the above functions to plot a whole triangle. Don't forget to
-	 * take into account the polygon mode. You should be able to render the
-	 * triangle as 3 points or 3 lines.
-	 */
-
-	// TODO Assignment 2: Add in the fill polygon mode.
+    /* TODO Assignment 1: Use the above functions to plot a whole triangle. Don't forget to
+     * take into account the polygon mode. You should be able to render the
+     * triangle as 3 points or 3 lines.
+     */
+    
+    // TODO Assignment 2: Add in the fill polygon mode.
 }
 
 /* draw_points
@@ -276,7 +315,7 @@ void canvashdl::plot_triangle(vec8f v1, vec8f v2, vec8f v3)
  */
 void canvashdl::draw_points(const vector<vec8f> &geometry)
 {
-	// TODO Assignment 1: Clip the points against the frustum, call the vertex shader, and then draw them.
+    // TODO Assignment 1: Clip the points against the frustum, call the vertex shader, and then draw them.
 }
 
 /* Draw a set of 3D lines on the canvas. Each point in geometry
@@ -284,7 +323,7 @@ void canvashdl::draw_points(const vector<vec8f> &geometry)
  */
 void canvashdl::draw_lines(const vector<vec8f> &geometry, const vector<int> &indices)
 {
-	// TODO Assignment 1: Clip the lines against the frustum, call the vertex shader, and then draw them.
+    // TODO Assignment 1: Clip the lines against the frustum, call the vertex shader, and then draw them.
 }
 
 /* Draw a set of 3D triangles on the canvas. Each point in geometry is
@@ -295,10 +334,10 @@ void canvashdl::draw_lines(const vector<vec8f> &geometry, const vector<int> &ind
  */
 void canvashdl::draw_triangles(const vector<vec8f> &geometry, const vector<int> &indices)
 {
-	/* TODO Assignment 1: Clip the triangles against the frustum, call the vertex shader,
-	 * break the resulting polygons back into triangles, implement front and back face
-	 * culling, and then draw the remaining triangles.
-	 */
+    /* TODO Assignment 1: Clip the triangles against the frustum, call the vertex shader,
+     * break the resulting polygons back into triangles, implement front and back face
+     * culling, and then draw the remaining triangles.
+     */
 }
 
 
@@ -315,141 +354,141 @@ void canvashdl::draw_triangles(const vector<vec8f> &geometry, const vector<int> 
  */
 void canvashdl::load_texture()
 {
-	glGenTextures(1, &screen_texture);
-	check_error(__FILE__, __LINE__);
-	glActiveTexture(GL_TEXTURE0);
-	check_error(__FILE__, __LINE__);
-	glBindTexture(GL_TEXTURE_2D, screen_texture);
-	check_error(__FILE__, __LINE__);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	check_error(__FILE__, __LINE__);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	check_error(__FILE__, __LINE__);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	check_error(__FILE__, __LINE__);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	check_error(__FILE__, __LINE__);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	check_error(__FILE__, __LINE__);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, color_buffer);
-	check_error(__FILE__, __LINE__);
+    glGenTextures(1, &screen_texture);
+    check_error(__FILE__, __LINE__);
+    glActiveTexture(GL_TEXTURE0);
+    check_error(__FILE__, __LINE__);
+    glBindTexture(GL_TEXTURE_2D, screen_texture);
+    check_error(__FILE__, __LINE__);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    check_error(__FILE__, __LINE__);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    check_error(__FILE__, __LINE__);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    check_error(__FILE__, __LINE__);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    check_error(__FILE__, __LINE__);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    check_error(__FILE__, __LINE__);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, color_buffer);
+    check_error(__FILE__, __LINE__);
 }
 
 void canvashdl::load_geometry()
 {
-	// x, y, s, t
-	const GLfloat geometry[] = {
-			-1.0, -1.0, 0.0, 0.0,
-			 1.0, -1.0, 1.0, 0.0,
-			-1.0,  1.0, 0.0, 1.0,
-			-1.0,  1.0, 0.0, 1.0,
-			 1.0, -1.0, 1.0, 0.0,
-			 1.0,  1.0, 1.0, 1.0
-	};
-
-	glGenBuffers(1, &screen_geometry);
-	glBindBuffer(GL_ARRAY_BUFFER, screen_geometry);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*4*6, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat)*4*6, geometry);
+    // x, y, s, t
+    const GLfloat geometry[] = {
+        -1.0, -1.0, 0.0, 0.0,
+        1.0, -1.0, 1.0, 0.0,
+        -1.0,  1.0, 0.0, 1.0,
+        -1.0,  1.0, 0.0, 1.0,
+        1.0, -1.0, 1.0, 0.0,
+        1.0,  1.0, 1.0, 1.0
+    };
+    
+    glGenBuffers(1, &screen_geometry);
+    glBindBuffer(GL_ARRAY_BUFFER, screen_geometry);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*4*6, NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat)*4*6, geometry);
 }
 
 void canvashdl::load_shader()
 {
-	GLuint vertex = load_shader_file(working_directory + "res/canvas.vx", GL_VERTEX_SHADER);
-	GLuint fragment = load_shader_file(working_directory + "res/canvas.ft", GL_FRAGMENT_SHADER);
-
-	screen_shader = glCreateProgram();
-	glAttachShader(screen_shader, vertex);
-	glAttachShader(screen_shader, fragment);
-	glLinkProgram(screen_shader);
+    GLuint vertex = load_shader_file(working_directory + "res/canvas.vx", GL_VERTEX_SHADER);
+    GLuint fragment = load_shader_file(working_directory + "res/canvas.ft", GL_FRAGMENT_SHADER);
+    
+    screen_shader = glCreateProgram();
+    glAttachShader(screen_shader, vertex);
+    glAttachShader(screen_shader, fragment);
+    glLinkProgram(screen_shader);
 }
 
 void canvashdl::init_opengl()
 {
-	glEnable(GL_TEXTURE_2D);
-	glViewport(0, 0, width, height);
-
-	load_texture();
-	load_geometry();
-	load_shader();
-	initialized = true;
+    glEnable(GL_TEXTURE_2D);
+    glViewport(0, 0, width, height);
+    
+    load_texture();
+    load_geometry();
+    load_shader();
+    initialized = true;
 }
 
 void canvashdl::check_error(const char *file, int line)
 {
-	GLenum error_code;
-	error_code = glGetError();
-	if (error_code != GL_NO_ERROR)
-		cerr << "error: " << file << ":" << line << ": " << gluErrorString(error_code) << endl;
+    GLenum error_code;
+    error_code = glGetError();
+    if (error_code != GL_NO_ERROR)
+        cerr << "error: " << file << ":" << line << ": " << gluErrorString(error_code) << endl;
 }
 
 double canvashdl::get_time()
 {
-	timeval gtime;
-	gettimeofday(&gtime, NULL);
-	return gtime.tv_sec + gtime.tv_usec*1.0E-6;
+    timeval gtime;
+    gettimeofday(&gtime, NULL);
+    return gtime.tv_sec + gtime.tv_usec*1.0E-6;
 }
 
 void canvashdl::viewport(int w, int h)
 {
-	glViewport(0, 0, w, h);
-	last_reshape_time = get_time();
-	reshape_width = w;
-	reshape_height = h;
+    glViewport(0, 0, w, h);
+    last_reshape_time = get_time();
+    reshape_width = w;
+    reshape_height = h;
 }
 
 void canvashdl::swap_buffers()
 {
-	if (!initialized)
-		init_opengl();
-
-	if (last_reshape_time > 0.0 && get_time() - last_reshape_time > 0.125)
-		resize(reshape_width, reshape_height);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glUseProgram(screen_shader);
-	check_error(__FILE__, __LINE__);
-
-	glActiveTexture(GL_TEXTURE0);
-	check_error(__FILE__, __LINE__);
-	glBindTexture(GL_TEXTURE_2D, screen_texture);
-	check_error(__FILE__, __LINE__);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, color_buffer);
-	check_error(__FILE__, __LINE__);
-	glUniform1i(glGetUniformLocation(screen_shader, "tex"), 0);
-	check_error(__FILE__, __LINE__);
-
-	glBindBuffer(GL_ARRAY_BUFFER, screen_geometry);
-	check_error(__FILE__, __LINE__);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	check_error(__FILE__, __LINE__);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	check_error(__FILE__, __LINE__);
-
-	glTexCoordPointer(2, GL_FLOAT, sizeof(GLfloat)*4, (float*)(sizeof(GLfloat)*2));
-	check_error(__FILE__, __LINE__);
-	glVertexPointer(2, GL_FLOAT, sizeof(GLfloat)*4, NULL);
-	check_error(__FILE__, __LINE__);
-
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	check_error(__FILE__, __LINE__);
-
-	glDisableClientState(GL_VERTEX_ARRAY);
-	check_error(__FILE__, __LINE__);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	check_error(__FILE__, __LINE__);
-
-	glutSwapBuffers();
-	check_error(__FILE__, __LINE__);
+    if (!initialized)
+        init_opengl();
+    
+    if (last_reshape_time > 0.0 && get_time() - last_reshape_time > 0.125)
+        resize(reshape_width, reshape_height);
+    
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glUseProgram(screen_shader);
+    check_error(__FILE__, __LINE__);
+    
+    glActiveTexture(GL_TEXTURE0);
+    check_error(__FILE__, __LINE__);
+    glBindTexture(GL_TEXTURE_2D, screen_texture);
+    check_error(__FILE__, __LINE__);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, color_buffer);
+    check_error(__FILE__, __LINE__);
+    glUniform1i(glGetUniformLocation(screen_shader, "tex"), 0);
+    check_error(__FILE__, __LINE__);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, screen_geometry);
+    check_error(__FILE__, __LINE__);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    check_error(__FILE__, __LINE__);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    check_error(__FILE__, __LINE__);
+    
+    glTexCoordPointer(2, GL_FLOAT, sizeof(GLfloat)*4, (float*)(sizeof(GLfloat)*2));
+    check_error(__FILE__, __LINE__);
+    glVertexPointer(2, GL_FLOAT, sizeof(GLfloat)*4, NULL);
+    check_error(__FILE__, __LINE__);
+    
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    check_error(__FILE__, __LINE__);
+    
+    glDisableClientState(GL_VERTEX_ARRAY);
+    check_error(__FILE__, __LINE__);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    check_error(__FILE__, __LINE__);
+    
+    glutSwapBuffers();
+    check_error(__FILE__, __LINE__);
 }
 
 int canvashdl::get_width()
 {
-	return width;
+    return width;
 }
 
 int canvashdl::get_height()
 {
-	return height;
+    return height;
 }
