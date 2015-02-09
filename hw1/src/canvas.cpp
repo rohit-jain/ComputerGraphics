@@ -101,38 +101,40 @@ void canvashdl::load_identity()
 void canvashdl::rotate(float angle, vec3f axis)
 {
     // TODO Assignment 1: Multiply the active matrix by a rotation matrix.
-    mat4f rotation_matrix;
-    
-    //(1) Rotate space about the x axis so that the rotation axis lies in the xz plane.
-    mat4f Rz = identity<float, 4, 4>();
+    mat4f rotation_matrix = identity<float, 4, 4>();
     float sin_val = sin(degtorad(angle));
     float cos_val = cos(degtorad(angle));
+    float a = axis[0];
+    float b = axis[1];
+    float c = axis[2];
     
-    Rz[0][0] = cos_val;
-    Rz[0][1] = -sin_val;
-    Rz[1][0] = sin_val;
-    Rz[1][1] = cos_val;
+    rotation_matrix[0][0] = a*a*(1-cos_val)+cos_val;
+    rotation_matrix[0][1] = a*b*(1-cos_val)-c*sin_val;
+    rotation_matrix[0][2] = a*c*(1-cos_val)+b*sin_val;
+    rotation_matrix[1][0] = a*b*(1-cos_val)+c*sin_val;
+    rotation_matrix[1][1] = b*b*(1-cos_val)+cos_val;
+    rotation_matrix[1][2] = c*b*(1-cos_val)-a*sin_val;
+    rotation_matrix[2][0] = a*c*(1-cos_val)-b*sin_val;
+    rotation_matrix[2][1] = c*b*(1-cos_val)+a*sin_val;
+    rotation_matrix[2][2] = c*c*(1-cos_val)+cos_val;
     
-    rotation_matrix = Rz;
-    //Or active_matrix = Rz*active_matrix;
+    matrices[active_matrix] = rotation_matrix*matrices[active_matrix];
     
-    //(3) Rotate space about the y axis so that the rotation axis lies along the z axis.
-    mat4f Ry = identity<float, 4, 4>();
     
-    Rz[0][0] = cos_val;
-    Rz[0][2] = sin_val;
-    Rz[2][0] = -sin_val;
-    Rz[2][2] = cos_val;
+    /***************************
+     *Another way...
+     ***************************/
+    //(1) Rotate space about the x axis so that the rotation axis lies in the xz plane.
     
-    rotation_matrix = Ry*rotation_matrix;
+    //(2) Rotate space about the y axis so that the rotation axis lies along the z axis.
     
-    //(4) Perform the desired rotation by θ about the z axis.
+    //(3) Perform the desired rotation by θ about the z axis.
     
-    //(5) Apply the inverse of step (3).
+    //(4) Apply the inverse of step (3).
     
-    //(6) Apply the inverse of step (2).
+    //(5) Apply the inverse of step (2).
     
-    //(7) Apply the inverse of step (1).
+    //(6) Apply the inverse of step (1).
 }
 
 /* translate
@@ -145,7 +147,7 @@ void canvashdl::translate(vec3f direction)
     // TODO Assignment 1: Multiply the active matrix by a translation matrix.
     
     mat4f translation_matrix = identity<float, 4, 4>();
-    vec4f direction2(direction, 1);
+    vec4f direction2 = homogenize(direction);
     translation_matrix.set_col(3, direction2);
     matrices[active_matrix] = translation_matrix*matrices[active_matrix];
 }
@@ -158,6 +160,13 @@ void canvashdl::translate(vec3f direction)
 void canvashdl::scale(vec3f size)
 {
     // TODO Assignment 1: Multiply the active matrix by a scaling matrix.
+    mat4f scaling_matrix = identity<float, 4, 4>();
+    for (int i = 0; i < 3; ++i)
+    {
+        scaling_matrix[i][i] = size[i];
+    }
+    matrices[active_matrix] = scaling_matrix*matrices[active_matrix];
+
 }
 
 /* perspective
