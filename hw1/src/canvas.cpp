@@ -194,9 +194,29 @@ void canvashdl::frustum(float l, float r, float b, float t, float n, float f)
  * Multiply the active matrix by an orthographic projection matrix.
  * This implements: https://www.opengl.org/sdk/docs/man2/xhtml/glOrtho.xml
  */
-void canvashdl::ortho(float l, float r, float b, float t, float n, float f)
+void canvashdl::ortho(float left, float right, float bottom, float top, float nearVal, float farVal)
 {
     // TODO Assignment 1: Multiply the active matrix by an orthographic projection matrix.
+    
+    //The strategy to transform a glOrtho()-defined viewing box into the canonical box is straightforward:
+    //Translate the viewing box so that its center coincides with that of the canonical one, then scale
+    //its sides so that the match those of the canonical box.
+    
+    //The center of the viewing box defined by a call to glOrtho() is:
+    //[(r+l)/2, (t+b)/2, -(f+n)/2]. Therefore:
+    vec3f displacement_vector(-(right+left)/2, -(top+bottom)/2, (farVal+nearVal)/2);
+    translate(displacement_vector);
+    
+    //Since the viewing box is of size (r-l) x (t-b) x (f-n), while the canonical box is of size 2 x 2 x 2
+    //the scaling transformation matching the size of the former with those of the latter:
+    vec3f scaling_vector(2/(right-left), 2/(top-bottom), 2/(farVal-nearVal));
+    scale(scaling_vector);
+    
+    //Finally, to account for the reversal in direction of the lines of sight, the needed transformation
+    //is (x,y,z) -> (x,y,-z):
+    vec3f scaling_vector2(1,1,-1);
+    scale(scaling_vector2);
+    
 }
 
 /* look_at
