@@ -101,10 +101,12 @@ void canvashdl::load_identity()
 void canvashdl::rotate(float angle, vec3f axis)
 {
     // TODO Assignment 1: Multiply the active matrix by a rotation matrix.
+    if (mag(axis) != 1)
+        axis = norm(axis);
+    
     mat4f rotation_matrix = identity<float, 4, 4>();
     float sin_val = sin(degtorad(angle));
     float cos_val = cos(degtorad(angle));
-    axis = norm(axis);
     float a = axis[0];
     float b = axis[1];
     float c = axis[2];
@@ -120,22 +122,6 @@ void canvashdl::rotate(float angle, vec3f axis)
     rotation_matrix[2][2] = c*c*(1-cos_val)+cos_val;
     
     matrices[active_matrix] = rotation_matrix*matrices[active_matrix];
-    
-    
-    /***************************
-     *Another way...
-     ***************************/
-    //(1) Rotate space about the x axis so that the rotation axis lies in the xz plane.
-    
-    //(2) Rotate space about the y axis so that the rotation axis lies along the z axis.
-    
-    //(3) Perform the desired rotation by θ about the z axis.
-    
-    //(4) Apply the inverse of step (3).
-    
-    //(5) Apply the inverse of step (2).
-    
-    //(6) Apply the inverse of step (1).
 }
 
 /* translate
@@ -254,6 +240,15 @@ void canvashdl::look_at(vec3f eye, vec3f at, vec3f up)
     // TODO Assignment 1: Emulate the functionality of gluLookAt
 }
 
+/* change_scale
+ *
+ * Changes the scale of a given value.
+ */
+float canvashdl::change_scale(float current_val, float current_min, float current_max, float final_min, float final_max)
+{
+    return (((final_max-final_min)*(current_val-current_min))/(current_max-current_min))+final_min;
+}
+
 /* to_window
  *
  * Pixel coordinates to window coordinates.
@@ -263,7 +258,11 @@ vec3f canvashdl::to_window(vec2i pixel)
     /* TODO Assignment 1: Given a pixel coordinate (x from 0 to width and y from 0 to height),
      * convert it into window coordinates (x from -1 to 1 and y from -1 to 1).
      */
-    return vec3f();
+    
+    float x = change_scale(pixel[0], 0, width, -1, 1);
+    float y = change_scale(pixel[1], 0, height, -1, 1);
+    vec3f result(x,y);
+    return result;
 }
 
 /* unproject

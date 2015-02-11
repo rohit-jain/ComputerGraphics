@@ -33,6 +33,7 @@ private:
 	void init_opengl();
 	void check_error(const char *file, int line);
 	double get_time();
+    float change_scale(float current_val, float current_min, float current_max, float final_min, float final_max);
 
 	// Buffer Management
 	void resize(int w, int h);
