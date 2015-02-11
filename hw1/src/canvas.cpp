@@ -104,6 +104,7 @@ void canvashdl::rotate(float angle, vec3f axis)
     mat4f rotation_matrix = identity<float, 4, 4>();
     float sin_val = sin(degtorad(angle));
     float cos_val = cos(degtorad(angle));
+    axis = norm(axis);
     float a = axis[0];
     float b = axis[1];
     float c = axis[2];
@@ -174,9 +175,21 @@ void canvashdl::scale(vec3f size)
  * Multiply the active matrix by a perspective projection matrix.
  * This implements: https://www.opengl.org/sdk/docs/man2/xhtml/gluPerspective.xml
  */
-void canvashdl::perspective(float fovy, float aspect, float n, float f)
+void canvashdl::perspective(float fovy, float aspect, float nearVal, float farVal)
 {
     // TODO Assignment 1: Multiply the active matrix by a perspective projection matrix.
+    
+    mat4f perspective_matrix = identity<float, 4, 4>();
+    float f = 1/tan(degtorad(fovy/2));
+    
+    perspective_matrix[0][0] = f/aspect;
+    perspective_matrix[1][1] = f;
+    perspective_matrix[2][2] = (nearVal+farVal)/(nearVal-farVal);
+    perspective_matrix[2][3] = (2*nearVal*farVal)/(nearVal-farVal);
+    perspective_matrix[3][2] = -1;
+    perspective_matrix[3][3] = 0;
+    matrices[active_matrix] = perspective_matrix*matrices[active_matrix];
+    
 }
 
 /* frustum
@@ -184,9 +197,20 @@ void canvashdl::perspective(float fovy, float aspect, float n, float f)
  * Multiply the active matrix by a frustum projection matrix.
  * This implements: https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
  */
-void canvashdl::frustum(float l, float r, float b, float t, float n, float f)
+void canvashdl::frustum(float left, float right, float bottom, float top, float nearVal, float farVal)
 {
     // TODO Assignment 1: Multiply the active matrix by a frustum projection matrix.
+    mat4f frustum_matrix = identity<float, 4, 4>();
+    
+    frustum_matrix[0][0] = (2*nearVal)/(right-left);
+    frustum_matrix[0][2] = (right+left)/(right-left);
+    frustum_matrix[1][1] = (2*nearVal)/(top-bottom);
+    frustum_matrix[1][2] = (top+bottom)/(top-bottom);
+    frustum_matrix[2][2] = -(farVal+nearVal)/(farVal-nearVal);
+    frustum_matrix[2][3] = -(2*farVal*nearVal)/(farVal-nearVal);
+    frustum_matrix[3][2] = -1;
+    frustum_matrix[3][3] = 0;
+    matrices[active_matrix] = frustum_matrix*matrices[active_matrix];
 }
 
 /* ortho
@@ -208,7 +232,7 @@ void canvashdl::ortho(float left, float right, float bottom, float top, float ne
     translate(displacement_vector);
     
     //Since the viewing box is of size (r-l) x (t-b) x (f-n), while the canonical box is of size 2 x 2 x 2
-    //the scaling transformation matching the size of the former with those of the latter:
+    //the scaling transformation matching the size of the former with those of the latter is:
     vec3f scaling_vector(2/(right-left), 2/(top-bottom), 2/(farVal-nearVal));
     scale(scaling_vector);
     
