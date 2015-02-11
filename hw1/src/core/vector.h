@@ -59,18 +59,6 @@ namespace core
                 data[i] = 0;
         }
         
-        //Included by Oliver
-        template <class t2, class t3, int s2>
-        vec(vec<t2, s2> v, t3 fill_value)
-        {
-            int m = min(s, s2);
-            for (int i = 0; i < m; i++)
-                data[i] = (t)v.data[i];
-            for (int i = m; i < s; i++)
-                data[i] = fill_value;
-        }
-        
-        
         template <class t2>
         vec(t2 first, ...)
         {

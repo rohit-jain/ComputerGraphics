@@ -264,14 +264,16 @@ int main(int argc, char **argv)
     //    canvas.translate(direction);
     //    canvas.translate(direction);
     //    cout << canvas.matrices[canvas.active_matrix];
-    mat4f Rz = identity<float, 4, 4>();
-    float sin_val = sin(degtorad(-90));
-    float cos_val = cos(degtorad(90));
-    cout << Rz << endl;
-    Rz[0][0] = sin_val;
-    Rz[0][1] = cos_val;
-    cout << Rz << endl;
-    
+//    mat4f Rz = identity<float, 4, 4>();
+//    vec3f axis(1,1,1);
+//    //Rz.set_col(3, homogenize(axis));
+//    canvas.matrices[canvas.active_matrix] = Rz;
+//    cout << canvas.matrices[canvas.active_matrix];
+//    canvas.rotate(90, axis);
+//    cout << endl << canvas.matrices[canvas.active_matrix];
+
+    vec2i pixel(0, canvas.get_height());
+    cout << canvas.to_window(pixel);
     
     return 0;
 }
