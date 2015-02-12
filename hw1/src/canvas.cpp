@@ -258,10 +258,10 @@ vec3f canvashdl::to_window(vec2i pixel)
     /* TODO Assignment 1: Given a pixel coordinate (x from 0 to width and y from 0 to height),
      * convert it into window coordinates (x from -1 to 1 and y from -1 to 1).
      */
-    
     float x = change_scale(pixel[0], 0, width, -1, 1);
     float y = change_scale(pixel[1], 0, height, -1, 1);
     vec3f result(x,y);
+    result[2] = 1;
     return result;
 }
 
@@ -283,6 +283,8 @@ vec3f canvashdl::unproject(vec3f window)
 vec8f canvashdl::shade_vertex(vec8f v)
 {
     // TODO Assignment 1: Do all of the necessary transformations (normal, projection, modelview, etc)
+    
+    // v8f = x,y,z, normal_z, normal_y, normal_z, u, v -> we split it into 4 x,y,z,w and apply the transforms, we dont care about the rest for now. (we keep them the same)
     
     // TODO Assignment 2: Implement Flat and Gouraud shading.
     return vec8f();
